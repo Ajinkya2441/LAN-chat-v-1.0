@@ -1,0 +1,8 @@
+Flask
+Flask-SocketIO
+Flask-SQLAlchemy
+python-socketio
+python-engineio
+Werkzeug
+cryptography
+eventlet

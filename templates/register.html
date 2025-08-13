@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Data Viewer</title>
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div>
+                <a href="/dashboard" class="btn btn-secondary me-3">Back to Dashboard</a>
+        </div>
+        <h1 class="text-center">Admin Data Viewer</h1>
+ 
+        <h2>Users</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                    <th>Online</th>
+                    <th>Admin</th>
+                    <th>Created By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.password }}</td>
+                    <td>{{ user.online }}</td>
+                    <td>{{ user.is_admin }}</td>
+                    <td>{{ user.created_by }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+ 
+        <h2>Messages</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Sender</th>
+                    <th>Recipients</th>
+                    <th>Content</th>
+                    <th>Timestamp</th>
+                    <th>Status</th>
+                    <th>Reply To</th>
+                    <th>Reactions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in messages %}
+                <tr>
+                    <td>{{ message.id }}</td>
+                    <td>{{ message.sender }}</td>
+                    <td>{{ message.recipients }}</td>
+                    <td>{{ message.content }}</td>
+                    <td>{{ message.timestamp }}</td>
+                    <td>{{ message.status }}</td>
+                    <td>{{ message.reply_to }}</td>
+                    <td>{{ message.reactions }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+ 
+        <h2>Files</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Filename</th>
+                    <th>Original Name</th>
+                    <th>Uploader</th>
+                    <th>Timestamp</th>
+                    <th>Mimetype</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td>{{ file.id }}</td>
+                    <td>{{ file.filename }}</td>
+                    <td>{{ file.original_name }}</td>
+                    <td>{{ file.uploader }}</td>
+                    <td>{{ file.timestamp }}</td>
+                    <td>{{ file.mimetype }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+ 
+ 

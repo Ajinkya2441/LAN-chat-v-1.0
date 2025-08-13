@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - LAN Chat</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/icons/bootstrap-icons.css">
+    <link href="/static/css/chat.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .main-container {
+            display: flex;
+            height: 100vh;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            width: 240px;
+            background: linear-gradient(135deg, #233554 0%, #3a7bd5 100%);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            padding: 0px 0 0 0;
+            min-width: 180px;
+            box-shadow: 2px 0 16px rgba(34, 46, 60, 0.10);
+        }
+        
+        .sidebar .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 32px;
+            text-align: center;
+            letter-spacing: 1px;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(34, 46, 60, 0.10);
+        }
+        
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 12px 32px;
+            border: none;
+            background: none;
+            text-align: left;
+            font-size: 1rem;
+            border-radius: 8px 0 0 8px;
+            margin: 4px 0;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: none;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .sidebar .nav-link.active,
+        .sidebar .nav-link:hover {
+            background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+            color: #fff;
+            box-shadow: 2px 4px 16px rgba(0, 114, 255, 0.10);
+            text-decoration: none;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .content-area {
+            flex: 1 1 0;
+            background: #f8f9fa;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 32px;
+            background: linear-gradient(90deg, #6366f1 60%, #06b6d4 100%);
+            color: #fff;
+            border-bottom: 1.5px solid #e0e7ff;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+        }
+        
+
+        
+        .dashboard-header h2 {
+            margin-bottom: 0;
+        }
+        
+        .dashboard-header .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        
+        .admin-badge {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .main-content {
+            flex: 1;
+            position: relative;
+        }
+        
+        /* Section Content Styles */
+        .section-content {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 10px;
+        }
+        
+        .section-content.active {
+            display: block;
+        }
+        
+        /* Chat Dashboard Styles */
+        .chat-dashboard {
+            display: flex;
+            gap: 24px;
+            height: calc(100vh - 120px);
+        }
+        
+        .chat-sidebar {
+            width: 320px;
+            min-width: 280px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* Evenly divide chat and group sections */
+        #sidebar-chats-section, #sidebar-groups-section {
+            flex: 1 1 0;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar-chats-section .user-list,
+        #sidebar-groups-section .group-list {
+            flex: 1 1 0;
+            min-height: 0;
+            overflow-y: auto;
+            max-height: none;
+        }
+        
+        .chat-sidebar .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .chat-sidebar .sidebar-section:last-child {
+            border-bottom: none;
+            flex: 1;
+        }
+        
+        .chat-sidebar .section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-sidebar .user-list,
+        .chat-sidebar .group-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .chat-sidebar .list-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid #e9ecef;
+        }
+        
+        .chat-sidebar .list-item:hover,
+        .chat-sidebar .list-item.active {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .chat-sidebar .list-item .user-name {
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .chat-sidebar .list-item .user-status {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .chat-main {
+            flex: 1;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #233554 0%, #3a7bd5 100%);
+            color: #fff;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-header .chat-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .chat-header .chat-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-body {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .chat-footer {
+            padding: 20px 24px;
+            background: #fff;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .chat-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .chat-input-group .file-input {
+            display: none;
+        }
+        
+        .chat-input-group .file-label {
+            padding: 8px 12px;
+            background: #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #666;
+            transition: background 0.2s;
+        }
+        
+        .chat-input-group .file-label:hover {
+            background: #dee2e6;
+        }
+        
+        .chat-input-group .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .chat-input-group .send-btn {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #233554 0%, #3a7bd5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .chat-input-group .send-btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn-new-group {
+            background: linear-gradient(135deg, #233554 0%, #3a7bd5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-new-group:hover {
+            transform: translateY(-1px);
+        }
+        
+
+        
+        .welcome-section {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .welcome-section h3 {
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            margin-bottom: 24px;
+        }
+        
+        .welcome-section .btn {
+            background: linear-gradient(135deg, #233554 0%, #3a7bd5 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            margin: 8px;
+            transition: transform 0.2s;
+        }
+        
+        .welcome-section .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 120px;
+            }
+            
+            .dashboard-header {
+                padding: 16px 8px 0 8px;
+            }
+            
+            .chat-dashboard {
+                flex-direction: column;
+                padding: 16px;
+            }
+            
+            .chat-sidebar {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+                width: 100%;
+                min-width: 0;
+                padding: 0;
+            }
+            
+            .sidebar .nav-link {
+                flex: 1 1 0;
+                text-align: center;
+                padding: 10px 0;
+                border-radius: 0;
+            }
+        }
+        .btn-group .btn {
+            margin-right: 2px;
+        }
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .badge {
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-logo" style="cursor:pointer;">
+                <span id="sidebar-logo-link">
+                    <img src="{{ url_for('static', filename='img/lcblacklogo.png') }}" alt="Logo">
+                </span>
+            </div>
+
+            <a href="/dashboard" class="nav-link active" data-section="welcome">
+                <i class="bi bi-house"></i> Dashboard
+            </a>
+            <a href="/chats" class="nav-link" data-section="chats">
+                <i class="bi bi-chat-dots"></i> Chats
+                <span id="chats-badge" class="badge bg-danger" style="margin-left:8px;"></span>
+            </a>
+            <a href="/groups" class="nav-link" data-section="groups">
+                <i class="bi bi-people-fill"></i> Groups
+                <span id="groups-badge" class="badge bg-danger" style="margin-left:8px;"></span>
+            </a>
+            <a href="/files" class="nav-link" data-section="files">
+                <i class="bi bi-folder2-open"></i> Files
+            </a>
+            {% if session.get('is_admin') %}
+            <a href="/add-user" class="nav-link" data-section="add-user">
+                <i class="bi bi-person-plus"></i> Add User
+            </a>
+            <a href="/pending-requests" class="nav-link" data-section="pending-requests">
+                <i class="bi bi-clock"></i> Requests
+                <span id="pending-requests-badge" class="badge bg-danger" style="margin-left:8px;"></span>
+            </a>
+            <a href="/reset-requests" class="nav-link" data-section="reset-requests">
+                <i class="bi bi-key"></i> Resets
+                <span id="reset-requests-badge" class="badge bg-danger" style="margin-left:8px;"></span>
+            </a>
+            <a href="/all-users" class="nav-link" data-section="all-users">
+                <i class="bi bi-people"></i> Users
+            </a>
+            <a href="/admins" class="nav-link" data-section="admins">
+                <i class="bi bi-shield"></i> Admins
+            </a>
+            {% endif %}
+            <div style="flex: 1;"></div>
+            <a href="/logout" class="nav-link">
+                <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Header -->
+            <div class="dashboard-header" style="display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; background: linear-gradient(90deg, #6366f1 60%, #06b6d4 100%); color: #fff; border-bottom: 1.5px solid #e0e7ff; box-shadow: 0 2px 8px rgba(99,102,241,0.08);">
+                <div style="display: flex; align-items: center; gap: 18px; width: 27%; justify-content: center;">
+                    <h2 id="section-title" style="margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: 0.02em;">Dashboard</h2>
+                </div>
+                <div class="header-actions" style="display: flex; align-items: center; gap: 18px;">
+                    <select id="theme-switcher" class="form-select form-select-sm" style="width: 120px; min-width: 100px; margin-right: 10px;">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                    </select>
+                    <span style="font-size: 1.1em;">Welcome, <strong>{{ username }}</strong></span>
+                    {% if session.get('is_admin') %}
+                    <span class="admin-badge" style="background: rgba(0,0,0,0.15); color: #fff; border-radius: 12px; padding: 4px 12px; font-size: 1em; display: flex; align-items: center; gap: 6px;">
+                        <i class="bi bi-shield-check"></i> Admin
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Welcome Section -->
+                <div id="welcome-section" class="section-content active">
+                    <div class="welcome-section">
+                        <h3>Welcome to LAN Chat Dashboard</h3>
+                        <p>Manage your chat, files, users, and more from this central dashboard.</p>
+                        <div>
+                            <button class="btn" onclick="showSection('chats')">
+                                <i class="bi bi-chat-dots"></i> Start Chatting
+                            </button>
+                            {% if session.get('is_admin') %}
+                            <button class="btn" onclick="showSection('add-user')">
+                                <i class="bi bi-person-plus"></i> Add Users
+                            </button>
+                            <button class="btn" id="welcome-create-group-btn" title="Create Group">
+                                <i class="bi bi-plus-circle"></i> Create Group
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chats Section -->
+                <div id="chats-section" class="section-content">
+                    <div class="chat-dashboard">
+                        <!-- Chat Sidebar (only users) -->
+                        <div class="chat-sidebar">
+                            <div class="sidebar-section" id="sidebar-chats-section">
+                                <div class="section-title">
+                                    <span>Chats</span>
+                                </div>
+                                <div class="user-list" id="user-list">
+                                    <!-- Users will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Main Area (shared) -->
+                        <div class="chat-main">
+                            <div class="chat-header">
+                                <div class="chat-title" id="chat-title">Select a chat to start messaging</div>
+                                <div class="chat-actions">
+                                    <button id="chat-info-btn" class="btn btn-outline-info btn-sm d-none" title="Chat Info">
+                                        <i class="bi bi-info-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chat-body" id="chat-body">
+                                <!-- Messages will appear here -->
+                            </div>
+                            <div class="chat-footer">
+                                <form id="message-form" class="chat-input-group">
+                                    <input type="file" id="file-input" class="file-input">
+                                    <label for="file-input" class="file-label">
+                                        <i class="bi bi-paperclip"></i>
+                                    </label>
+                                    <div id="file-preview" style="margin-top: 8px;"></div>
+                                    <input type="text" id="message-input" class="message-input" placeholder="Type a message..." autocomplete="off">
+                                    <button type="submit" class="send-btn">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Groups Section -->
+                <div id="groups-section" class="section-content">
+                    <div class="chat-dashboard">
+                        <!-- Group Sidebar (only groups) -->
+                        <div class="chat-sidebar">
+                            <div class="sidebar-section" id="sidebar-groups-section">
+                                <div class="section-title">
+                                    <span>Groups</span>
+                                    <button class="btn-new-group" id="open-create-group-modal" title="Create Group">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </button>
+                                </div>
+                                <div class="group-list" id="group-list">
+                                    <!-- Groups will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Main Area (shared) -->
+                        <div class="chat-main">
+                            <div class="chat-header">
+                                <div class="chat-title" id="group-chat-title">Select a group to start messaging</div>
+                                <div class="chat-actions">
+                                    <button id="group-info-btn" class="btn btn-outline-light btn-sm d-none" title="Group Info">
+                                        <i class="bi bi-info-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chat-body" id="group-chat-body">
+                                <!-- Group messages will appear here -->
+                            </div>
+                            <div class="chat-footer">
+                                <form id="group-message-form" class="chat-input-group">
+                                    <input type="file" id="group-file-input" class="file-input">
+                                    <label for="group-file-input" class="file-label">
+                                        <i class="bi bi-paperclip"></i>
+                                    </label>
+                                    <div id="group-file-preview" style="margin-top: 8px;"></div>
+                                    <input type="text" id="group-message-input" class="message-input" placeholder="Type a message..." autocomplete="off">
+                                    <button type="submit" class="send-btn">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add User Section -->
+                <div id="add-user-section" class="section-content">
+                    <div class="container">
+                        <h3>Add User</h3>
+                        <p>Create new users for the system.</p>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        {% if message %}
+                        <div class="alert alert-info">{{ message }}</div>
+                        {% endif %}
+                        
+                        <form method="POST" action="/add-user" class="mt-4">
+                            <input type="hidden" name="action" value="create_user">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="new_username" class="form-label">Username</label>
+                                        <input type="text" class="form-control" id="new_username" name="new_username" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="new_password" class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="new_is_admin" name="new_is_admin">
+                                    <label class="form-check-label" for="new_is_admin">
+                                        Make this user an admin
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i> Create User
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Pending Requests Section -->
+                <div id="pending-requests-section" class="section-content">
+                    <div class="container">
+                        <h3>Pending User Requests</h3>
+                        <p>Approve or reject new user registration requests.</p>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        {% if message %}
+                        <div class="alert alert-info">{{ message }}</div>
+                        {% endif %}
+                        
+                        {% if requests %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Requested By</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in requests %}
+                                    <tr>
+                                        <td>{{ req.username }}</td>
+                                        <td>{{ req.requested_by or 'Self' }}</td>
+                                        <td>{{ req.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge {% if req.status == 'pending' %}bg-warning{% elif req.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ req.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if req.status == 'pending' %}
+                                            <form method="POST" action="/pending-requests" style="display: inline;">
+                                                <input type="hidden" name="action" value="approve">
+                                                <input type="hidden" name="req_id" value="{{ req.id }}">
+                                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                            </form>
+                                            <form method="POST" action="/pending-requests" style="display: inline;">
+                                                <input type="hidden" name="action" value="reject">
+                                                <input type="hidden" name="req_id" value="{{ req.id }}">
+                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                            {% else %}
+                                            <span class="text-muted">Processed</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">No pending requests.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Reset Requests Section -->
+                <div id="reset-requests-section" class="section-content">
+                    <div class="container">
+                        <h3>Password Reset Requests</h3>
+                        <p>Approve or reject password reset requests from users.</p>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        {% if message %}
+                        <div class="alert alert-info">{{ message }}</div>
+                        {% endif %}
+                        
+                        {% if reset_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Request Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for req in reset_requests %}
+                                    <tr>
+                                        <td>{{ req.username }}</td>
+                                        <td>{{ req.requested_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge {% if req.status == 'pending' %}bg-warning{% elif req.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                                {{ req.status.title() }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if req.status == 'pending' %}
+                                            <form method="POST" action="/reset-requests" style="display: inline;">
+                                                <input type="hidden" name="action" value="approve_reset">
+                                                <input type="hidden" name="reset_id" value="{{ req.id }}">
+                                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                            </form>
+                                            <form method="POST" action="/reset-requests" style="display: inline;">
+                                                <input type="hidden" name="action" value="reject_reset">
+                                                <input type="hidden" name="reset_id" value="{{ req.id }}">
+                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                            </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">No password reset requests.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- All Users Section -->
+                <div id="all-users-section" class="section-content">
+                    <div class="container">
+                        <h3>All Users</h3>
+                        <p>Manage all registered users in the system.</p>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' if category == 'error' else 'info' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        {% if message %}
+                        <div class="alert alert-info">{{ message }}</div>
+                        {% endif %}
+                        
+                        {% if users %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Role</th>
+                                        <th>Created By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>
+                                            <span class="badge {% if user.online %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ 'Online' if user.online else 'Offline' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if user.is_admin %}
+                                            <span class="badge bg-danger">Admin</span>
+                                            {% else %}
+                                            <span class="badge bg-info">User</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.created_by or 'System' }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                {% if not user.is_admin %}
+                                                <!-- Promote to Admin -->
+                                                <form method="POST" action="/all-users" style="display: inline;">
+                                                    <input type="hidden" name="action" value="promote_admin">
+                                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Promote {{ user.username }} to admin?')" title="Promote to Admin">
+                                                        <i class="bi bi-shield-check"></i>
+                                                    </button>
+                                                </form>
+                                                {% else %}
+                                                <!-- Demote from Admin -->
+                                                <form method="POST" action="/all-users" style="display: inline;">
+                                                    <input type="hidden" name="action" value="demote_admin">
+                                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                    <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Demote {{ user.username }} from admin?')" title="Demote from Admin">
+                                                        <i class="bi bi-shield-x"></i>
+                                                    </button>
+                                                </form>
+                                                {% endif %}
+                                                
+                                                <!-- Delete User -->
+                                                <form method="POST" action="/all-users" style="display: inline;" class="delete-user-form">
+                                                    <input type="hidden" name="action" value="delete_user">
+                                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                                    <button type="submit" class="btn btn-danger btn-sm delete-user-btn" data-username="{{ user.username }}" title="Delete User">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">No users found.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Admins Section -->
+                <div id="admins-section" class="section-content">
+                    <div class="container">
+                        <h3>Admin Management</h3>
+                        <p>View and manage admin users in the system.</p>
+                        
+                        {% if users %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Status</th>
+                                        <th>Created By</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    {% if user.is_admin %}
+                                    <tr>
+                                        <td>{{ user.username }}</td>
+                                        <td>
+                                            <span class="badge {% if user.online %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ 'Online' if user.online else 'Offline' }}
+                                            </span>
+                                        </td>
+                                        <td>{{ user.created_by or 'System' }}</td>
+                                        <td>
+                                            <span class="text-muted">System Admin</span>
+                                        </td>
+                                    </tr>
+                                    {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">No admin users found.</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Files Section -->
+                <div id="files-section" class="section-content">
+                    <div class="container mt-4">
+                        <h3>All Files</h3>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Filename</th>
+                                    <th>Type</th>
+                                    <th>To/From</th>
+                                    <th>Timestamp</th>
+                                    <th>Download</th>
+                                </tr>
+                            </thead>
+                            <tbody id="files-table-body">
+                                <!-- Files will be loaded here by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal fade" id="createGroupModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-group-form">
+                        <div class="mb-3">
+                            <label for="group-name" class="form-label">Group Name</label>
+                            <input type="text" class="form-control" id="group-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="group-description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="group-description" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Members</label>
+                            <div id="group-members-list" class="list-group" style="max-height: 200px; overflow-y: auto;">
+                                <!-- Will be populated with user checkboxes -->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="create-group-btn">Create Group</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Info Modal -->
+    <div class="modal fade" id="groupInfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Group Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="group-info-content">
+                        <!-- Will be populated with group info -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="clear-group-chat-btn">Clear Conversation</button>
+                    <button type="button" class="btn btn-danger" id="delete-group-btn">Delete Group</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Info Modal -->
+    <div class="modal fade" id="chatInfoModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chat Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="chat-info-content">
+                        <!-- Will be populated with chat info -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" id="clear-chat-btn">Clear Conversation</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Universal Interactive Popup Modal -->
+    <div class="modal fade" id="universalPopupModal" tabindex="-1" aria-labelledby="universalPopupTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="universalPopupTitle">Notification</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="universalPopupBody">
+            <!-- Dynamic message goes here -->
+          </div>
+          <div class="modal-footer" id="universalPopupFooter">
+            <button type="button" class="btn btn-primary" id="universalPopupOkBtn" data-bs-dismiss="modal">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/socket.io.min.js"></script>
+    <script src="/static/js/chat.js"></script>
+    <script src="/static/js/admin_dashboard.js"></script>
+    
+    <!-- Template Variables -->
+    <script>
+        // Template variables from server
+        var username = "{{ username }}";
+        var isAdmin = "{{ 'true' if session.get('is_admin') else 'false' }}" === "true";
+        var activeSection = "{{ active_section or '' }}";
+    </script>
+    
+    <script>
+        // Set global variables for chat functionality
+        window.USERNAME = username;
+        window.isAdmin = isAdmin;
+        
+        // Section management
+        function showSection(sectionName) {
+            // Hide all sections
+            $('.section-content').removeClass('active');
+            
+            // Show selected section
+            $('#' + sectionName + '-section').addClass('active');
+            
+            // Update navigation
+            $('.nav-link').removeClass('active');
+            $('.nav-link[data-section="' + sectionName + '"]').addClass('active');
+            
+            // Update title
+            const titles = {
+                'welcome': 'Dashboard',
+                'chats': 'Chats',
+                'add-user': 'Add User',
+                'pending-requests': 'Pending Requests',
+                'reset-requests': 'Reset Requests',
+                'all-users': 'All Users',
+                'admins': 'Admins',
+                'files': 'Files'
+            };
+            $('#section-title').text(titles[sectionName] || 'Dashboard');
+        }
+        
+        // Initialize page
+        $(document).ready(function() {
+            // Show the active section based on server data
+            if (activeSection) {
+                showSection(activeSection);
+            } else {
+                // Default to welcome section
+                showSection('welcome');
+            }
+            
+
+            
+
+            
+            // Comprehensive create group functionality
+            function initializeCreateGroup() {
+                console.log('Initializing create group functionality...');
+                
+                // Handle all create group buttons
+                $(document).on('click', '#open-create-group-modal, #welcome-create-group-btn', function() {
+                    console.log('Create group button clicked:', this.id);
+                    openCreateGroupModal();
+                });
+                
+                // Handle form submission
+                $(document).on('submit', '#create-group-form', function(e) {
+                    e.preventDefault();
+                    console.log('Create group form submitted');
+                    submitCreateGroup();
+                });
+                
+                // Handle modal button click
+                $(document).on('click', '#create-group-btn', function() {
+                    console.log('Modal create group button clicked');
+                    submitCreateGroup();
+                });
+            }
+            
+            // Function to open create group modal
+            function openCreateGroupModal() {
+                console.log('Opening create group modal...');
+                
+                // Check if modal exists
+                if ($('#createGroupModal').length === 0) {
+                    console.error('Create group modal not found');
+                    alert('Group modal not found. Please refresh the page.');
+                    return;
+                }
+                
+                // Load user list for member selection
+                $.get('/users_status', function(users) {
+                    console.log('Loaded users:', users);
+                    let $list = $('#group-members-list');
+                    $list.empty();
+                    
+                    users.forEach(function(u) {
+                        if (u.username === username) return; // Skip current user
+                        $list.append(`
+                            <div class="list-group-item d-flex align-items-center justify-content-between">
+                                <div>
+                                    <input type="checkbox" class="form-check-input group-member-checkbox" value="${u.username}" id="member-${u.username}">
+                                    <label for="member-${u.username}" class="form-check-label ms-2">${u.username}</label>
+                                </div>
+                                <div>
+                                    <input type="checkbox" class="form-check-input group-admin-checkbox" value="${u.username}" id="admin-${u.username}">
+                                    <label for="admin-${u.username}" class="form-check-label ms-1 text-primary">Admin</label>
+                                </div>
+                            </div>
+                        `);
+                    });
+                    
+                    // Show the modal
+                    $('#createGroupModal').modal('show');
+                }).fail(function(xhr, status, error) {
+                    console.error('Failed to load users:', error);
+                    alert('Failed to load user list. Please try again.');
+                });
+            }
+            
+            // Function to submit create group
+            function submitCreateGroup() {
+                console.log('Submitting create group...');
+                
+                let name = $('#group-name').val().trim();
+                let description = $('#group-description').val().trim();
+                let members = [];
+                let admins = [username]; // Always include self as admin
+                
+                $('.group-member-checkbox:checked').each(function() {
+                    members.push($(this).val());
+                });
+                members.push(username); // Always include self as member
+                members = [...new Set(members)];
+                
+                $('.group-admin-checkbox:checked').each(function() {
+                    admins.push($(this).val());
+                });
+                admins = [...new Set(admins)];
+                
+                console.log('Group data:', { name, description, members, admins });
+                
+                if (!name) {
+                    alert('Group name required.');
+                    return;
+                }
+                if (members.length < 2) {
+                    alert('Select at least one member.');
+                    return;
+                }
+                
+                $.ajax({
+                    url: '/groups/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ 
+                        name: name, 
+                        description: description, 
+                        members: members, 
+                        admins: admins 
+                    }),
+                    success: function(resp) {
+                        console.log('Group creation response:', resp);
+                        if (resp.success) {
+                            $('#createGroupModal').modal('hide');
+                            // Clear form fields
+                            $('#group-name').val('');
+                            $('#group-description').val('');
+                            $('.group-member-checkbox').prop('checked', false);
+                            $('.group-admin-checkbox').prop('checked', false);
+                            alert('Group created successfully!');
+                            // Reload groups if we're in chat section
+                            if (typeof loadGroups === 'function') {
+                                loadGroups();
+                            }
+                        } else {
+                            alert(resp.error || 'Group creation failed');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Group creation error:', xhr);
+                        alert(xhr.responseJSON?.error || 'Group creation failed. Please try again.');
+                    }
+                });
+            }
+            
+            // Initialize create group functionality
+            initializeCreateGroup();
+            
+            // Debug: Check if elements exist
+            console.log('Debug info:');
+            console.log('- Username:', username);
+            console.log('- Is Admin:', isAdmin);
+            console.log('- Create group modal button exists:', $('#open-create-group-modal').length > 0);
+            console.log('- Create group modal exists:', $('#createGroupModal').length > 0);
+            console.log('- Welcome create group button exists:', $('#welcome-create-group-btn').length > 0);
+        });
+    </script>
+    {% if message and 'created successfully' in message %}
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        showPopup({
+          title: 'User Created',
+          message: {{ message|tojson }},
+          icon: 'success'
+        });
+      });
+    </script>
+    {% endif %}
+</body>
+</html> 
